@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <title>πnder</title>
+</head>
+<body>
+   <canvas id="canvas" width="200" height="200" style="outline: 1px solid black; float: right; margin: -5px; margin-top: -14px; top: 0;"></canvas>
+   <p id="output"></p>
+   <div id="consolehold" style="position: absolute; z-index: 100; left: 10px; bottom: 10px; width: calc(100% - 20px);">
+      <div id="controlplace" style="width: 10%;">
+         <div id="distselect">
+            <span>Distance Type:</span> <br />
+            <button id="distype-default" style="border: none; outline: none; margin-bottom: 3px; font-weight: bold;" onclick="handleMenuInput('default');">Circular</button> <br />
+            <button id="distype-quadrant" style="border: none; outline: none;" onclick="handleMenuInput('quarter');">Quadrant</button>
+         </div>
+         <hr />
+         <span>Size:</span> <br />
+         <input id="menu-sizeinput" type='number' value="200" onkeyup="r = document.querySelector('#menu-sizeinput').value;">
+         <hr />
+         <button id="startloopbn" onclick="startloop(r);">Start</button> <button id="stoploopbn" onclick="endloop();">Stop</button>
+      </div> <br />
+      <hr />
+      <span>Makeshift console input line:</span><br />
+      <input id="consoleinput" type="text" style="width: 50%; border: 2px solid black; background-color: rgba(0,0,0,0.15);">
+   </div>
+   
+   <script>
+      const cons = document.querySelector('#consoleinput');
+   
+      var picalc = 0;
+      
+      const cvs = document.querySelector('#canvas');
+      const ctx = cvs.getContext('2d');
+      
+      const output = document.querySelector('#output');
+      
+      var r = 200;
+      
+      var hit = 0;
+      var miss = 0;
+      var data = [];
+      
+      var p;
+      var imageDataGlobal;
+      
+      var loop;
+      var render;
+      var deltat = 4;
+      var usingDrawFn = false;
+      
+      class Point{
+         constructor(x, y, distanceFn = defaultDistance, sortFn = defaultSort){
+            let R = r - 1;
+            this.x = Math.round(R * x);
+            this.y = Math.round(R * y);
+            this.d = distanceFn(x, y);
+            // this.d = Math.sqrt(Math.pow(2 * x - 1, 2) + Math.pow(2 * y - 1, 2));
+            
+            this.state;
+            
+            sortFn(this);
+         }
+      }
+      
+      function defaultDistance(x, y){
+         return Math.sqrt((2 * x - 1) * (2 * x - 1) + (2 * y - 1) * (2 * y - 1));
+      }
+      function quarterDistance(x, y){
+         return Math.sqrt(x * x + y * y);
+      }
+      
+      function defaultSort(i){
+         data.push(i);
+         var s = Math.trunc(i.d);
+         i.state = !s;
+         miss += s;
+         hit += !s;
+      }
+      function defaultDrawingSort(i){
+         // Sort
+         data.push(i);
+         var s = Math.trunc(i.d);
+         i.state = !s;
+         miss += s;
+         hit += !s;
+         
+         // Draw
+         p = 4 * (i.x + (i.y * r));                // Pixel
+         imageDataGlobal[p] = !i.state * 255;      // Red
+         imageDataGlobal[p + 1] = i.state * 255;   // Green
+         imageDataGlobal[p + 3] = 255;             // Alpha
+         
+         ctx.putImageData(new ImageData(imageDataGlobal, r), 0, 0);
+      }
+      
+      var defaultDistFn = defaultDistance;
+      var defaultSortFn = defaultDrawingSort;
+      
+      
+      function draw(){
+         let imageData = new Uint8ClampedArray(r * r * 4);
+         data.forEach(i => {
+            p = 4 * (i.x + (i.y * r));          // Pixel
+            imageData[p] = !i.state * 255;      // Red
+            imageData[p + 1] = i.state * 255;   // Green
+            imageData[p + 3] = 255;             // Alpha
+         });
+         
+         ctx.putImageData(new ImageData(imageData, r), 0, 0);
+         
+         window.requestAnimationFrame(draw);
+      }
+      
+      function startloop(R = 200, t = deltat, distFn = defaultDistFn, sortFn = defaultSortFn, renderInt = 500, draw = false){
+         ctx.clearRect(0,0,r,r);
+         
+         defaultDistFn = distFn;
+         defaultSortFn = sortFn;
+         renderInterval = renderInt;
+         usingDrawFn = draw;
+         r = R;
+         deltat = t;
+         tnought = performance.now();
+         
+         tick = 0;
+         hit = 0;
+         miss = 0;
+         data = [];
+         imageDataGlobal = new Uint8ClampedArray(r * r * 4);
+         
+         cvs.width = r.toString();
+         cvs.height = r.toString();
+         
+         loop = window.setInterval(loopfn, t);
+         if(draw){
+            render = window.requestAnimationFrame(draw);
+         }
+      }
+      function endloop(){
+         window.clearInterval(loop);
+         if(usingDrawFn) window.cancelAnimationFrame(render);
+      }
+      function loopfn(distanceFn = defaultDistFn, sortFn = defaultSortFn){
+         // new Point(Math.random(), Math.random());
+         new Point(Math.random(), Math.random(), distanceFn, sortFn);
+         
+         picalc = 4 * hit / (hit + miss);
+         output.innerHTML = `${picalc}<br />${(100 * (Math.PI - picalc) / Math.PI).toFixed(2)}% error`;
+      }
+      
+      cons.addEventListener('keydown', e => {
+         if(e.code == 'Enter'){
+            
+            if(cons.value == 'help'){
+               help();
+               cons.value = '';
+               cons.focus();
+               return undefined;
+            }
+            
+            let line = cons.value;
+            
+            console.log(line);
+            try{
+               (new Function(line))();
+            }
+            catch(err){
+               console.error(err);
+            }
+            
+            cons.value = '';
+            cons.focus();
+         }
+      });
+      
+      function help(){
+         alert("");
+      }
+      
+      function handleMenuInput(type){
+         if(type == 'default'){
+            endloop();
+            defaultDistFn = defaultDistance;
+            document.querySelector('#distype-default').style.fontWeight = 'bold';
+            document.querySelector('#distype-quadrant').style.fontWeight = 'normal';
+         }
+         else{
+            endloop();
+            defaultDistFn = quarterDistance;
+            document.querySelector('#distype-default').style.fontWeight = 'normal';
+            document.querySelector('#distype-quadrant').style.fontWeight = 'bold';
+         }
+      }
+   </script>
+</body>
+</html>
