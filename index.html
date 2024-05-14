@@ -5,7 +5,7 @@
 </head>
 <body>
    <canvas id="canvas" width="200" height="200" style="outline: 1px solid black; float: right; margin: -5px; margin-top: -14px; top: 0;"></canvas>
-   <p id="output">π = <br />err = </p>
+   <p id="output">π = <br />err: </p>
    <div id="consolehold" style="position: absolute; z-index: 100; left: 10px; bottom: 10px; width: calc(100% - 20px);">
       <div id="controlplace" style="width: 10%;">
          <div id="distselect">
@@ -142,7 +142,7 @@
          new Point(Math.random(), Math.random(), distanceFn, sortFn);
          
          picalc = 4 * hit / (hit + miss);
-         output.innerHTML = `π = ${picalc}<br />err = ${(100 * (Math.PI - picalc) / Math.PI).toFixed(2)}% error`;
+         output.innerHTML = `π = ${picalc}<br />err: ${(100 * (Math.PI - picalc) / Math.PI).toFixed(2)}% error`;
       }
       
       cons.addEventListener('keydown', e => {
