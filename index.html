@@ -5,16 +5,16 @@
 </head>
 <body>
    <canvas id="canvas" width="200" height="200" style="outline: 1px solid black; float: right; margin: -5px; margin-top: -14px; top: 0;"></canvas>
-   <p id="output"></p>
+   <p id="output">π = <br />err = </p>
    <div id="consolehold" style="position: absolute; z-index: 100; left: 10px; bottom: 10px; width: calc(100% - 20px);">
       <div id="controlplace" style="width: 10%;">
          <div id="distselect">
             <span>Distance Type:</span> <br />
-            <button id="distype-default" style="border: none; outline: none; margin-bottom: 3px; font-weight: bold;" onclick="handleMenuInput('default');">Circular</button> <br />
-            <button id="distype-quadrant" style="border: none; outline: none;" onclick="handleMenuInput('quarter');">Quadrant</button>
+            <button id="distype-default" style="border: none; outline: none; margin-bottom: 3px; font-weight: bold;" onclick="handleMenuInput('default');" title="Use the full unit circle for calculations">Circular</button> <br />
+            <button id="distype-quadrant" style="border: none; outline: none;" onclick="handleMenuInput('quarter');" title="Use the first quadrant for calculations">Quadrant</button>
          </div>
          <hr />
-         <span>Size:</span> <br />
+         <span>Size: (_px * _px) </span> <br />
          <input id="menu-sizeinput" type='number' value="200" onkeyup="r = document.querySelector('#menu-sizeinput').value;">
          <hr />
          <button id="startloopbn" onclick="startloop(r);">Start</button> <button id="stoploopbn" onclick="endloop();">Stop</button>
@@ -142,7 +142,7 @@
          new Point(Math.random(), Math.random(), distanceFn, sortFn);
          
          picalc = 4 * hit / (hit + miss);
-         output.innerHTML = `${picalc}<br />${(100 * (Math.PI - picalc) / Math.PI).toFixed(2)}% error`;
+         output.innerHTML = `π = ${picalc}<br />err = ${(100 * (Math.PI - picalc) / Math.PI).toFixed(2)}% error`;
       }
       
       cons.addEventListener('keydown', e => {
